@@ -1,0 +1,23 @@
+services:
+  app:
+    build:
+      context: ./app
+    command: uvicorn main:APP --host 0.0.0.0 --port 8006
+    environment:
+      - APP_LOG_PATH=/logs/app/app.log
+      - LOG_ROOT=/logs
+      - RECEIVED_LOG_PATH=/logs/received/ingest.log
+    ports:
+      - "8006:8006"
+    volumes:
+      - ./_data/logs:/logs
+
+  fluent-bit:
+    image: cr.fluentbit.io/fluent/fluent-bit:latest
+    depends_on:
+      - app
+    command: -c /fluent-bit/etc/fluent-bit.conf
+    volumes:
+      - ./fluent-bit/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf:ro
+      - ./fluent-bit/parsers.conf:/fluent-bit/etc/parsers.conf:ro
+      - ./_data/logs:/logs
