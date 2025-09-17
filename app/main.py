@@ -113,6 +113,39 @@ async def test_logs() -> Dict[str, Any]:
     }
 
 
+@APP.get("/audit-logs")
+async def audit_logs() -> Dict[str, Any]:
+    """Generate a mix of [audit]-tagged and non-audit logs.
+
+    This endpoint is used to demonstrate Fluent Bit filtering, where only lines
+    containing the literal token "[audit]" should be forwarded downstream.
+    """
+    import random
+
+    user_id = random.randint(1000, 9999)
+    resource = random.choice(["profile", "settings", "billing", "projects"])
+
+    # Audit logs (should be forwarded)
+    app_logger.info(f"[audit] user={user_id} action=read resource={resource}")
+    app_logger.info(
+        f"[audit] user={user_id} action=update resource={resource} result=success"
+    )
+
+    app_logger.info("bumindu")
+    app_logger.info("[audit] bumindu")
+
+    # Non-audit logs (should be dropped)
+    app_logger.info(f"User {user_id} viewed the {resource} page")
+    app_logger.warning(f"Cache miss for user {user_id} {resource}")
+
+    return {
+        "status": "success",
+        "message": "Emitted [audit] and non-audit logs",
+        "audit_logs": 2,
+        "non_audit_logs": 2,
+    }
+
+
 def _normalize_records(
     payload: Union[Dict[str, Any], List[Any]],
 ) -> List[Dict[str, Any]]:
