@@ -1,5 +1,2 @@
-_data/logs
-_data/logs/received/ingest.log
-_data/logs/app/app.log
-_data/logs/app/app.log
-_data/logs/app/app.log
+# Local log volume data (do not commit any logs)
+_data/logs/
